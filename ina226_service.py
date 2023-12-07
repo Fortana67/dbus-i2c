@@ -9,7 +9,7 @@ class INA226Service(DCI2CService):
         super().__init__(conn, i2cBus, i2cAddr, serviceType, 'INA226', maxExpectedCurrent=maxExpectedCurrent, shuntResistance=shuntResistance)
 
     def _configure_service(self, maxExpectedCurrent, shuntResistance):
-        self.device = INA226(busnum=self.i2cBus, address=self.i2cAddr, max_expected_amps=maxExpectedCurrent, shunt_ohms=shuntResistance, log_level=logging.INFO)
+        self.device = INA226(busnum=self.i2cBus, address=self.i2cAddr, max_expected_amps=maxExpectedCurrent, shunt_ohms=shuntResistance)
         self.device.configure(avg_mode=INA226.AVG_4BIT, bus_ct=INA226.VCT_2116us_BIT, shunt_ct=INA226.VCT_2116us_BIT)
         self.device.sleep()
         super()._configure_service()
@@ -18,9 +18,10 @@ class INA226Service(DCI2CService):
         self.device.wake()
         # With the parameters 4 samples and 2.116ms conversion time the conversion needs around 8.5ms per channel
         # As there are two channels (supply voltage and current) the overall time is around 17ms
+        time.sleep(0.020)
         while self.device.is_conversion_ready() == 0:
             # Sleep 10ms
-            time.sleep(0.01)
+            time.sleep(0.010)
         voltage = round(self._voltage(), 3)
         current = round(self.device.current()/1000, 3)
         power = round(self.device.power()/1000, 3)
